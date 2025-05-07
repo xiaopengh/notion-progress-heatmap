@@ -30,19 +30,27 @@ export default async (req, res) => {
 };
 
 const processData = (data) => {
-    const progressMap = new Map();
+  const progressMap = new Map();
 
-    data.forEach(item => {
-        if (item.properties.Date && item.properties.Progress) {
-            if (item.properties.Progress.formula.number !== null && item.properties.Progress.formula.number > 0) {
-                const dateObject = new Date(item.properties.Date);
-                dateObject.setDate(dateObject.getDate()); // Add one day to the date
-                const date = dateObject.toISOString().split('T')[0]; // Format back to YYYY-MM-DD
-                const progress = Math.round(item.properties.Progress.formula.number * 100); // Convert from 0-1 to 0-100
-                progressMap.set(date, progress);
-            }
-        }
-    });
+  data.forEach(item => {
+    const dateProperty = item.properties?.Date;
+    const progressProperty = item.properties?.Progress;
 
-    return Array.from(progressMap).map(([date, progress]) => ({ date, progress }));
+    const progressValue = progressProperty?.formula?.number;
+    const dateValue = dateProperty?.created_time;
+
+    if (progressValue !== null && progressValue !== undefined && progressValue > 0 && dateValue) {
+      const dateObject = new Date(dateValue);
+      if (!isNaN(dateObject.getTime())) {
+        dateObject.setDate(dateObject.getDate() + 1); // Add one day to the date
+        const date = dateObject.toISOString().split('T')[0]; // Format back to YYYY-MM-DD
+        const progress = Math.round(progressValue * 100); // Convert from 0-1 to 0-100
+        progressMap.set(date, progress);
+      } else {
+        console.warn(`Invalid date encountered: ${dateValue}`);
+      }
+    }
+  });
+
+  return Array.from(progressMap).map(([date, progress]) => ({ date, progress }));
 };
