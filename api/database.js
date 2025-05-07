@@ -11,7 +11,7 @@ export default async (req, res) => {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
-                'Notion-Version': '2021-05-13',
+                'Notion-Version': '2022-06-28',
                 'Content-Type': 'application/json'
             },
         });
